@@ -2,14 +2,15 @@
 
 /**
  * @Project ONLINE MESSAGE 4.x
- * @Author PHAN TAN DUNG (phantandung92@gmail.com)
+ * @Author PHAN TAN DUNG <phantandung92@gmail.com>
  * @Copyright (C) 2014 PHAN TAN DUNG. All rights reserved
  * @License GNU/GPL version 2 or any later version
  * @Createdate Thu, 19 May 2016 08:50:53 GMT
  */
 
-if (!defined('NV_IS_MOD_CHAT'))
+if (!defined('NV_IS_MOD_CHAT')) {
     die('Stop!!!');
+}
 
 // Lay nhom chat
 $gID = 0;
@@ -17,8 +18,7 @@ if (isset($array_op[1])) {
     $gID = (int)$array_op[1];
 }
 if (empty($gID)) {
-    Header("Location: " . nv_url_rewrite(NV_BASE_SITEURL . "index.php?" . NV_LANG_VARIABLE . "=" . NV_LANG_DATA . "&" . NV_NAME_VARIABLE . "=" . $module_name, true));
-    exit();
+    nv_redirect_location(NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name);
 }
 
 // Kiem tra thanh vien
@@ -91,7 +91,7 @@ if ($nv_Request->isset_request('updatechat', 'post,get')) {
     }
 
     $return_array = array(
-        0 => $_maxtime, 
+        0 => $_maxtime,
         1 => array(
             0 => !empty($array) ? (($is_ding == 1) ? 1 : 2) : 0,
             1 => "",

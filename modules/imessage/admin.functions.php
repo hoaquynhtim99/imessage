@@ -2,15 +2,19 @@
 
 /**
  * @Project ONLINE MESSAGE 4.x
- * @Author PHAN TAN DUNG (phantandung92@gmail.com)
+ * @Author PHAN TAN DUNG <phantandung92@gmail.com>
  * @Copyright (C) 2014 PHAN TAN DUNG. All rights reserved
  * @License GNU/GPL version 2 or any later version
  * @Createdate Thu, 19 May 2016 08:50:53 GMT
  */
 
-if (!defined('NV_ADMIN') or !defined('NV_MAINFILE') or !defined('NV_IS_MODADMIN'))
+if (!defined('NV_ADMIN') or !defined('NV_MAINFILE') or !defined('NV_IS_MODADMIN')) {
     die('Stop!!!');
+}
 
-$allow_func = array('main', 'link');
+$allow_func = [
+    'main',
+    'link'
+];
 
 define('NV_IS_IMESSAGE_ADMIN', true);
