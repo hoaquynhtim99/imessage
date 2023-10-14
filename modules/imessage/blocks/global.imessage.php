@@ -103,6 +103,14 @@ if (!nv_function_exists('nv_block_imessage')) {
         $html .= '</div>';
         $html .= '</div>';
 
+        // Chiều cao
+        $html .= '<div class="form-group">';
+        $html .= '<label class="control-label col-sm-6">' . $lang_module['block_box_height'] . ':</label>';
+        $html .= '<div class="col-sm-9">';
+        $html .= '<input class="form-control" type="number" min="0" name="config_box_height" value="' . $data_block['box_height'] . '">';
+        $html .= '</div>';
+        $html .= '</div>';
+
         return $html;
     }
 
@@ -124,6 +132,11 @@ if (!nv_function_exists('nv_block_imessage')) {
         $return['config']['align'] = $nv_Request->get_title('config_align', 'post', '');
         $return['config']['offset_x'] = $nv_Request->get_absint('config_offset_x', 'post', 0);
         $return['config']['offset_y'] = $nv_Request->get_absint('config_offset_y', 'post', 0);
+        $return['config']['box_height'] = $nv_Request->get_absint('config_box_height', 'post', 0);
+
+        if ($return['config']['box_height'] <= 0) {
+            $return['config']['box_height'] = 455;
+        }
 
         return $return;
     }

@@ -1,6 +1,8 @@
 <!-- BEGIN: main -->
 <!-- BEGIN: js_css -->
+<script type="text/javascript" src="{NV_BASE_SITEURL}themes/default/images/imessage/perfect-scrollbar.min.js"></script>
 <script type="text/javascript" src="{NV_BASE_SITEURL}themes/default/js/imessage.js"></script>
+<link type="text/css" href="{NV_BASE_SITEURL}themes/default/images/imessage/perfect-scrollbar.css" rel="stylesheet"/>
 <link type="text/css" href="{NV_BASE_SITEURL}themes/default/css/imessage.css" rel="stylesheet"/>
 <!-- END: js_css -->
 <!-- BEGIN: lang -->
@@ -15,6 +17,8 @@
     data-align="{CONFIG.align}"
     data-offsetx="{CONFIG.offset_x}"
     data-offsety="{CONFIG.offset_y}"
+    data-boxtitle="{CONFIG.title}"
+    data-boxheight="{CONFIG.box_height}"
 ></div>
 <!-- END FORFOOTER -->
 <!-- END: button -->
@@ -26,6 +30,8 @@
     data-align="{CONFIG.align}"
     data-offsetx="{CONFIG.offset_x}"
     data-offsety="{CONFIG.offset_y}"
+    data-boxtitle="{CONFIG.title}"
+    data-boxheight="{CONFIG.box_height}"
 ></div>
 <!-- END: inline -->
 <!-- END: main -->

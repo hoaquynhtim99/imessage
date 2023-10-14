@@ -1,3 +1,21 @@
+.imessage-light-mode {
+    --imessage-primary: #428bca;
+    --imessage-white: #ffffff;
+    --imessage-gray: #f0f2f5;
+    --imessage-gray2: #bcc0c4;
+}
+
+.imessage-chatbox {
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    display: flex;
+    flex-direction: column;
+}
+
+.imessage-chatbox-block {
+    border: 1px #ddd solid;
+    border-radius: 4px;
+}
+
 .imessage-chat-btn {
     position: fixed;
     border-radius: 50%;
@@ -17,10 +35,204 @@
 
 .imessage-chatbox-btn {
     position: fixed;
-    background-color: #fff;
+    background-color: var(--imessage-white);
     display: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.1),0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.imessage-chatbox-btn.box-round-bottom {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 .imessage-chatbox-btn.box-open {
     display: flex;
+}
+
+.imessage-box-heading {
+    flex: 0 0 48px;
+    max-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    justify-content: space-between;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1),0 -1px rgba(0, 0, 0, 0.1) inset,0 2px 1px -1px rgba(255, 255, 255, 0.5) inset;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.imessage-chatbox-block .imessage-box-heading {
+    background-color: var(--imessage-primary);
+    color: var(--imessage-white);
+    margin-left: -1px;
+    margin-top: -1px;
+    margin-right: -1px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.imessage-box-heading .box-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.imessage-box-heading .box-tools {
+    display: flex;
+    align-items: center;
+}
+
+.imessage-chatbox-block .box-tools {
+    display: none;
+}
+
+.imessage-box-heading .box-tools a {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.imessage-box-heading .box-tools a svg {
+    fill: var(--imessage-gray2);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    width: 18px;
+    height: 18px;
+}
+
+.imessage-box-heading .box-tools a:hover {
+    background-color: var(--imessage-gray);
+}
+
+.imessage-box-heading .box-tools a:hover svg {
+    fill: var(--imessage-primary);
+}
+
+.imessage-box-body {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.imessage-chatbox-btn.box-round-bottom .imessage-box-body {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.imessage-box-footer {
+    padding: 10px 8px;
+    align-items: end;
+    position: relative;
+}
+
+.imessage-box-footer svg {
+    fill: var(--imessage-primary);
+    width: 100%;
+    height: 100%;
+}
+
+.imessage-box-footer .box-text {
+    position: relative;
+    flex-grow: 1;
+    flex-shrink: 1;
+    background-color: var(--imessage-gray);
+    border-radius: 20px;
+    padding: 8px;
+    padding-right: 32px;
+    padding-left: 12px;
+    transition: margin-left 0.2s ease-in-out;
+    margin-left: 56px;
+}
+
+.imessage-is-typing .box-text {
+    border-radius: 14px;
+}
+
+.imessage-box-footer textarea {
+    border: 0;
+    resize: none;
+    height: 16px;
+    display: block;
+    width: 100%;
+    margin: 0;
+    line-height: 16px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    background-color: transparent;
+}
+
+.imessage-box-footer .box-funcs {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: 10px;
+    bottom: 16px;
+}
+
+.imessage-is-typing .box-funcs {
+    display: none;
+}
+
+.imessage-is-typing .box-text {
+    margin-left: 0;
+}
+
+.imessage-box-footer .box-funcs a {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.imessage-box-footer .box-funcs .icon-sound svg.sound-off {
+    display: none;
+}
+
+.imessage-box-footer .icon-emoji {
+    display: block;
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 20px;
+    height: 20px;
+}
+
+.imessage-emojis-panel {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+
+    width: 340px;
+    height: 300px;
+
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    background-color: var(--imessage-white);
+    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.imessage-emojis-panel .emoji-icon {
+    fill: var(--imessage-white);
+    transform: scale(-1, 1) translate(0px, 0px);
+    position: absolute;
+    right: 0;
+    top: calc(100% - 1px);
+}
+
+.imessage-emojis-panel .emoji-body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
 }

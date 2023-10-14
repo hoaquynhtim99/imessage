@@ -28,6 +28,7 @@ $lang_module['block_align_right'] = 'Bên phải';
 $lang_module['block_align_left'] = 'Bên trái';
 $lang_module['block_offset_x'] = 'Cách lề trái hoặc phải';
 $lang_module['block_offset_y'] = 'Cách lề dưới';
+$lang_module['block_box_height'] = 'Chiều cao khung chat';
 
 $lang_module['sound_on'] = 'Bật';
 $lang_module['sound_off'] = 'Tắt';
