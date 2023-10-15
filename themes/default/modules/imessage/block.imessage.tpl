@@ -11,6 +11,7 @@
 <!-- BEGIN: button -->
 <!-- START FORFOOTER -->
 <div data-toggle="imessage"
+    data-chatid="{CONFIG.bid}"
     data-groupchat="{CONFIG.group_chat}"
     data-typeshow="{CONFIG.type_show}"
     data-autoshow="{CONFIG.auto_show}"
@@ -24,6 +25,7 @@
 <!-- END: button -->
 <!-- BEGIN: inline -->
 <div data-toggle="imessage"
+    data-chatid="{CONFIG.bid}"
     data-groupchat="{CONFIG.group_chat}"
     data-typeshow="{CONFIG.type_show}"
     data-autoshow="{CONFIG.auto_show}"

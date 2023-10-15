@@ -16,6 +16,7 @@
 
         // Các key cấu hình mặc định
         static DEFAULTS = {
+            chatid: 0,
             boxtitle: '',
             boxheight: 450,
             groupchat: 0,
@@ -31,8 +32,7 @@
             btnPadding: 16,
             btnColor: '#ffffff',
             autoShowTimeout: 5000,
-            soundBuzz: nv_base_siteurl + 'themes/default/images/imessage/ding.mp3',
-            soundChat: nv_base_siteurl + 'themes/default/images/imessage/message.mp3',
+            baseDataUrl: nv_base_siteurl + 'themes/default/images/imessage',
         }
 
         #templateBtn = '\
@@ -71,16 +71,43 @@
         ';
 
         #templateEmojis = '<div class="imessage-emojis-panel" data-toggle="panelemojis">\
-            <div class="emoji-body"></div>\
+            <div class="emoji-body" data-toggle="scrolleremojis">\
+                <div class="emoji-body-inner" data-toggle="bodyemojis"></div>\
+            </div>\
             <svg height="12" viewBox="0 0 21 12" width="21" class="emoji-icon"><path d="M20.685.12c-2.229.424-4.278 1.914-6.181 3.403L5.4 10.94c-2.026 2.291-5.434.62-5.4-2.648V.12h20.684z"></path></svg>\
         </div>';
+
+        #dataEmojis = {
+            '6' : '>:D<',		'18' : '#:-S',				'36' : '<:-P',		'42' : ':-SS',
+            '48' : '<):)',		'50' : '3:-O',				'51' : ':(|)',		'53' : '@};-',
+            '55' : '**==',		'56' : '(~~)',				'58' : '*-:)',		'63' : '[-O<',
+            '67' : ':)>-',		'77' : '^:)^',				'106' : ':-??',		'25' : 'O:)',
+            '26' : ':-B',		'28' : 'I-)',				'29' : '8-|',		'30' : 'L-)',
+            '31' : ':-&',		'32' : ':-$',				'33' : '[-(',		'34' : ':O)',
+            '35' : '8-}',		'7' : ':-/',				'37' : '(:|',		'38' : '=P~',
+            '39' : ':-?',		'40' : '#-O',				'41' : '=D>',		'9' : ':">',
+            '43' : '@-)',		'44' : ':^O',				'45' : ':-W',		'46' : ':-<',
+            '47' : '>:P',		'11' : ':*',				'49' : ':@)',		'12' : '=((',
+            '13' : ':-O',		'52' : '~:>',				'16' : 'B-)',		'54' : '%%-',
+            '17' : ':-S',		'5' : ';;)',				'57' : '~O)',		'19' : '>:)',
+            '59' : '8-X',		'60' : '=:)',				'61' : '>-)',		'62' : ':-L',
+            '20' : ':((',		'64' : '$-)',				'65' : ':-"',		'66' : 'B-(',
+            '21' : ':))',		'68' : '[-X',				'69' : '\\:D/',		'70' : '>:/',
+            '71' : ';))',		'72' : 'O->',				'73' : 'O:',		'74' : 'O-+',
+            '75' : '(%)',		'76' : ':-@',				'23' : '/:)',		'78' : ':-J',
+            '79' : '(*)',		'100' : ':)]',				'101' : ':-C',		'102' : '~X(',
+            '103' : ':-H',		'104' : ':-T',				'105' : '8->',		'24' : '=))',
+            '107' : '%-(',		'108' : ':O3',				'1' : ':)',			'2' : ':(',
+            '3' : ';)',			'22' : ':|',				'14' : 'X(',		'15' : ':>',
+            '8' : ':X',			'4' : ':D',					'27' : '=;',		'10' : ':P',
+        };
 
         // Khởi tạo
         init() {
             var self = this;
             var cssMode = 'imessage-light-mode';
 
-            self.chatid = nv_randomPassword(8);
+            self.chatid = self.options.chatid;
             self.$element.addClass(cssMode);
             if (self.options.typeshow == 'button') {
                 self.$element.html(self.#templateBtn);
@@ -102,9 +129,20 @@
             css.push('z-index: ' + (self.options.zindex + 2));
             self.panel_emojis.attr('style', css.join('; '));
 
+            $.each(self.#dataEmojis, function(name, title) {
+                $('[data-toggle="bodyemojis"]', self.panel_emojis).append('<div class="imessage-item-emoji"><img data-toggle="emojiclick" alt="' + self.#replacechars(title) + '" title="' + self.#replacechars(title) + '" src="' + self.options.baseDataUrl + '/emoticons/yahoo/' + name + '.gif"></div>');
+            });
+            $('[data-toggle="emojiclick"]', self.panel_emojis).on('click', function() {
+                self.insertEmoji(this);
+            });
+            self.ps_emoji = new PerfectScrollbar($('[data-toggle="scrolleremojis"]', self.panel_emojis)[0], {
+                wheelPropagation: false,
+                minScrollbarLength: 20
+            });
+
             // Âm thanh
-            self.sound_buzz = new Audio(self.options.soundBuzz);
-            self.sound_chat = new Audio(self.options.soundChat);
+            self.sound_buzz = new Audio(self.options.baseDataUrl + '/ding.mp3');
+            self.sound_chat = new Audio(self.options.baseDataUrl + '/message.mp3');
 
             // Css nút chat
             if (self.options.typeshow == 'button') {
@@ -138,10 +176,16 @@
             });
 
             // Tự động show nút chat lên sau load trang
-            if (self.options.typeshow == 'button' && self.options.autoshow > 0) {
-                self.timerShowBox = setTimeout(function() {
-                    $('a', self.btn).trigger('click');
-                }, self.options.autoShowTimeout);
+            if (self.options.typeshow == 'button') {
+                var ck = nv_getCookie('imessage_show_box_' + self.chatid);
+                if (ck === null && self.options.autoshow > 0) {
+                    self.timerShowBox = setTimeout(function() {
+                        self.toggleChatBox();
+                    }, self.options.autoShowTimeout);
+                }
+                if (ck == 1) {
+                    self.toggleChatBox();
+                }
             }
 
             // Thiết lập tự động chỉnh kích thước khung chat
@@ -187,9 +231,28 @@
                 e.preventDefault();
                 self.toggleEmojis();
             });
+
+            // Xử lý khi click vào bất kỳ vị trí nào trên trang
+            $(document).on('click touchstart', function(event) {
+                self.handlerTouch(event);
+            });
         }
 
-        // FIXME
+        // Xử lý khi ấn vào client
+        handlerTouch(event) {
+            // Ẩn panel emojis nếu nó đang mở
+            if (this.show_emoji && !$(event.target).closest('.imessage-emojis-panel').length && !$(event.target).closest('.icon-emoji').length) {
+                this.toggleEmojis();
+            }
+        }
+
+        // Thêm emoji vào chat
+        insertEmoji(element) {
+            var self = this;
+            self.toggleEmojis();
+            self.#insertText($(element).attr('title'), true);
+        }
+
         // Gửi chat
         postChat(message) {
             console.log(message);
@@ -198,7 +261,8 @@
         // Ẩn hiện emojis
         toggleEmojis() {
             var self = this;
-            console.log('toggleEmojis');
+            self.show_emoji = self.show_emoji ? 0 : 1;
+            self.checkScreen();
         }
 
         // Gửi buzz
@@ -263,41 +327,77 @@
                 self.box.addClass('box-open');
                 self.boxOpen = 1;
             }
+            nv_setCookie('imessage_show_box_' + self.chatid, self.boxOpen, 365);
         }
 
         // Kiểm tra và chỉnh kích thước khung chat dựa vào chiều rộng màn hình
         checkScreen() {
             var self = this;
+            var winW = $(window).width(), winH = $(window).height();
+            var emojiWidth = 340, emojiHeight = 300;
+
+            // Kiểu hiển thị block
             if (self.options.typeshow != 'button') {
                 self.box.css({
                     height: self.options.boxheight + 'px'
                 });
+                if (!self.show_emoji) {
+                    self.panel_emojis.css({
+                        display: 'none'
+                    });
+                    return;
+                }
+
+                var offsetBtn = self.btn_emoji.offset();
+                var emojiRight = winW - offsetBtn.left - 10;
+
+                if (winW - emojiRight < 350) {
+                    emojiWidth = winW - emojiRight - 10;
+                }
+                if ((offsetBtn.top - emojiHeight - 16) < 0) {
+                    emojiHeight = offsetBtn.top - 16 - 10;
+                }
+
+                self.panel_emojis.css({
+                    top: (offsetBtn.top - emojiHeight - 16) + 'px',
+                    right: emojiRight + 'px',
+                    position: 'absolute',
+                    display: 'block',
+                    width: emojiWidth + 'px',
+                    height: emojiHeight + 'px',
+                });
+                self.ps_emoji.update();
+
                 return;
             }
+
+            // Kiểu hiển thị nút
             var boxDefaultW = 328, boxDefaultH = 455;
-            var boxW = 328, boxH = 455, winW = $(window).width(), winH = $(window).height();
-            var boxXOffset = 15, boxYOffset = 15;
+            var boxW = 328, boxH = 455;
+            var boxXOffset = 15, boxYOffset = 15, boxBottom = 0, boxX = 0;
             var css = {};
 
             if (winH > boxH && winW > (self.options.offsetx + self.options.btnWidth + boxXOffset + boxW)) {
-                css.bottom = '0px';
+                boxBottom = 0;
+                boxX = (self.options.offsetx + self.options.btnWidth + boxXOffset);
                 if (self.options.align == 'right') {
                     css.left = 'inherit';
-                    css.right = (self.options.offsetx + self.options.btnWidth + boxXOffset) + 'px';
+                    css.right = boxX + 'px';
                 } else {
-                    css.left = (self.options.offsetx + self.options.btnWidth + boxXOffset) + 'px';
+                    css.left = boxX + 'px';
                     css.right = 'inherit';
                 }
                 self.box.removeClass('box-round-bottom');
                 boxW = boxDefaultW;
                 boxH = boxDefaultH;
             } else if (winW > (boxW + self.options.offsetx) && winH > (self.options.offsety + self.options.btnWidth + boxYOffset + boxH)) {
-                css.bottom = (self.options.offsety + self.options.btnWidth + boxYOffset) + 'px';
+                boxBottom = (self.options.offsety + self.options.btnWidth + boxYOffset);
+                boxX = self.options.offsetx;
                 if (self.options.align == 'right') {
                     css.left = 'inherit';
-                    css.right = (self.options.offsetx) + 'px';
+                    css.right = boxX + 'px';
                 } else {
-                    css.left = (self.options.offsetx) + 'px';
+                    css.left = boxX + 'px';
                     css.right = 'inherit';
                 }
                 self.box.addClass('box-round-bottom');
@@ -308,14 +408,46 @@
                     boxH = winH - 5;
                 }
                 boxW = winW;
-                css.bottom = '0px';
+                boxBottom = 0;
                 css.left = '0px';
                 css.right = '0px';
+                boxX = 0;
                 self.box.removeClass('box-round-bottom');
             }
+            css.bottom = boxBottom + 'px';
             css.width = boxW + 'px';
             css.height = boxH + 'px';
             self.box.css(css);
+
+            // Emoji
+            if (!self.show_emoji) {
+                self.panel_emojis.css({
+                    display: 'none'
+                });
+                return;
+            }
+
+            var cssEmoji = {}, emojiRight;
+            cssEmoji.display = 'block';
+            cssEmoji.position = 'fixed';
+            cssEmoji.bottom = (boxBottom + 54) + 'px';
+            if (self.options.align == 'right') {
+                emojiRight = boxX + 21;
+                cssEmoji.right = emojiRight + 'px';
+            } else {
+                emojiRight = (winW - boxX - boxW + 21);
+                cssEmoji.right = emojiRight + 'px';
+            }
+            if ((winW - emojiWidth - emojiRight) < 10) {
+                emojiWidth = winW - 10 - emojiRight;
+            }
+            if (winH - boxBottom - 54 - emojiHeight < 10) {
+                emojiHeight = winH - boxBottom - 54 - 10;
+            }
+            cssEmoji.width = emojiWidth + 'px';
+            cssEmoji.height = emojiHeight + 'px';
+            self.panel_emojis.css(cssEmoji);
+            self.ps_emoji.update();
         }
 
         // Xử lý khi nhập nội dung chat
@@ -341,8 +473,82 @@
             }
 
             // Ấn enter => gửi nội dung chat
-            if (event.keyCode == 13 && !event.shiftKey) {
-                // FIXME submit
+            if (event && event.keyCode == 13 && !event.shiftKey) {
+                console.log('Submit');
+            }
+        }
+
+        // Htmlspecialchars emoji
+        #replacechars(a) {
+            a = a.replace(/&/i,"&amp;");
+            a = a.replace(/</i,"&lt;");
+            a = a.replace(/>/i,"&gt;");
+            a = a.replace(/"/i,"&quot;");
+            a = a.replace(/\\/i,"&#92;");
+            a = a.replace(/'/i,"&#39");
+            return a;
+        }
+
+        // Chèn text vào khung chat
+        #insertText(text, spaces) {
+            var self = this;
+            if (spaces) {
+                text = ' ' + text + ' ';
+            }
+
+            var clientPC = navigator.userAgent.toLowerCase(); // Get client info
+            var is_ie = ((clientPC.indexOf('msie') != -1) && (clientPC.indexOf('opera') == -1));
+            var baseHeight;
+
+            if (is_ie && typeof (baseHeight) != 'number') {
+                baseHeight = document.selection.createRange().duplicate().boundingHeight;
+            }
+
+            var textarea = self.textbox[0];
+
+            if (!isNaN(textarea.selectionStart)) {
+                var sel_start = textarea.selectionStart;
+                var sel_end = textarea.selectionEnd;
+                self.#mozWrap(textarea, text, '');
+                textarea.selectionStart = sel_start + text.length;
+                textarea.selectionEnd = sel_end + text.length;
+            } else if (textarea.createTextRange && textarea.caretPos) {
+                if (baseHeight != textarea.caretPos.boundingHeight) {
+                    textarea.focus();
+                    self.#storeCaret(textarea);
+                }
+                var caret_pos = textarea.caretPos;
+                caret_pos.text = caret_pos.text.charAt(caret_pos.text.length - 1) == ' ' ? caret_pos.text + text + ' ' : caret_pos.text + text;
+            } else {
+                textarea.value = textarea.value + text;
+            }
+
+            textarea.focus();
+            self.checkKeyboard();
+        }
+
+        #mozWrap(txtarea, open, close) {
+            var selLength = (typeof (txtarea.textLength) == 'undefined') ? txtarea.value.length : txtarea.textLength;
+            var selStart = txtarea.selectionStart;
+            var selEnd = txtarea.selectionEnd;
+            var scrollTop = txtarea.scrollTop;
+            if (selEnd == 1 || selEnd == 2) {
+                selEnd = selLength;
+            }
+            var s1 = (txtarea.value).substring(0, selStart);
+            var s2 = (txtarea.value).substring(selStart, selEnd);
+            var s3 = (txtarea.value).substring(selEnd, selLength);
+            txtarea.value = s1 + open + s2 + close + s3;
+            txtarea.selectionStart = selStart + open.length;
+            txtarea.selectionEnd = selEnd + open.length;
+            txtarea.focus();
+            txtarea.scrollTop = scrollTop;
+            return;
+        }
+
+        #storeCaret(textEl) {
+            if (textEl.createTextRange) {
+                textEl.caretPos = document.selection.createRange().duplicate();
             }
         }
     }
