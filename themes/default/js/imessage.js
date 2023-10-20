@@ -9,7 +9,10 @@
             this.boxOpen = 0;
             this.timerShowBox = 0;
             this.timerCheckScreen = 0;
+            this.timerRequest = 0;
             this.show_emoji = 0;
+            this.must_login = 0;
+            this.allowed = 0;
 
             this.init();
         }
@@ -25,7 +28,7 @@
             align: 'right',
             offsetx: 15,
             offsety: 15,
-            zindex: 2147483600,
+            zindex: 1500,
             btnWidth: 60,
             btnHeight: 60,
             btnBackground: '#5cb85c',
@@ -33,6 +36,9 @@
             btnColor: '#ffffff',
             autoShowTimeout: 5000,
             baseDataUrl: nv_base_siteurl + 'themes/default/images/imessage',
+            loginrequire: 0,
+            loginurl: '',
+            allowed: 0,
         }
 
         #templateBtn = '\
@@ -46,16 +52,19 @@
         #templateBlock = '<div class="imessage-chatbox imessage-chatbox-block" data-toggle="boxArea"></div>';
 
         #templateBox = '\
-            <div class="imessage-box-heading">\
+            <div class="imessage-box-heading" data-toggle="heading">\
                 <div class="box-title" data-toggle="titlebox"></div>\
                 <div class="box-tools">\
                     <a href="#" data-toggle="closebox"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></a>\
                 </div>\
             </div>\
             <div class="imessage-box-body">\
-                Boydy\
+                <div class="imessage-box-body-scroller" data-toggle="scrollerbody">\
+                    <div class="imessage-box-body-inner" data-toggle="body">\
+                    </div>\
+                </div>\
             </div>\
-            <div class="imessage-box-footer">\
+            <div class="imessage-box-footer" data-toggle="footer">\
                 <div class="box-funcs">\
                     <a data-toggle="chatsound" class="icon-sound" href="#">\
                         <svg class="sound-off" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3zM425 167l55 55 55-55c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-55 55 55 55c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-55-55-55 55c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l55-55-55-55c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0z"/></svg>\
@@ -69,6 +78,12 @@
                 </div>\
             </div>\
         ';
+
+        // add/remove class login
+        #templateLogin = '<div class="imessage-login"><a data-toggle="btnlogin" href=""></a></div>';
+
+        // add/remove class info
+        #templateInfo = '<div class="imessage-info"><div class="info-inner" data-toggle="info"></div></div>';
 
         #templateEmojis = '<div class="imessage-emojis-panel" data-toggle="panelemojis">\
             <div class="emoji-body" data-toggle="scrolleremojis">\
@@ -108,6 +123,8 @@
             var cssMode = 'imessage-light-mode';
 
             self.chatid = self.options.chatid;
+            self.allowed = self.options.allowed;
+            self.must_login = self.options.loginrequire;
             self.$element.addClass(cssMode);
             if (self.options.typeshow == 'button') {
                 self.$element.html(self.#templateBtn);
@@ -136,6 +153,19 @@
                 self.insertEmoji(this);
             });
             self.ps_emoji = new PerfectScrollbar($('[data-toggle="scrolleremojis"]', self.panel_emojis)[0], {
+                wheelPropagation: false,
+                minScrollbarLength: 20
+            });
+            self.heading = $('[data-toggle="heading"]', self.$element);
+            self.footer = $('[data-toggle="footer"]', self.$element);
+            if (!self.allowed || self.must_login) {
+                self.footer.css({
+                    'display': 'none'
+                });
+            }
+            self.scrollerbody = $('[data-toggle="scrollerbody"]', self.$element);
+            self.body = $('[data-toggle="body"]', self.$element);
+            self.ps_body = new PerfectScrollbar(self.scrollerbody[0], {
                 wheelPropagation: false,
                 minScrollbarLength: 20
             });
@@ -236,6 +266,51 @@
             $(document).on('click touchstart', function(event) {
                 self.handlerTouch(event);
             });
+
+            if (self.options.loginrequire) {
+                return self.handlerLogin(0);
+            }
+            if (!self.options.allowed) {
+                return self.handlerInfo(0);
+            }
+            // FIXME
+            self.timerRequest = setTimeout(function() {
+                self.request();
+            }, 1000);
+        }
+
+        // Hiển thị nút đăng nhập và kết thúc
+        handlerLogin(checkscreen) {
+            var self = this;
+            if (checkscreen) {
+                self.body.html('');
+                self.checkScreen();
+            }
+            self.body.addClass('login');
+            self.body.html(self.#templateLogin);
+            $('[data-toggle="btnlogin"]', self.body).attr('href', self.options.loginurl);
+            $('[data-toggle="btnlogin"]', self.body).html(window.langImessage.login);
+        }
+
+        // Hiển thị thông báo và kết thúc
+        handlerInfo(checkscreen) {
+            var self = this;
+            if (checkscreen) {
+                self.body.html('');
+                self.checkScreen();
+            }
+            self.body.addClass('info');
+            self.body.html(self.#templateInfo);
+            $('[data-toggle="info"]', self.body).html(window.langImessage.no_allow_chat);
+        }
+
+        handlerChatRequest() {
+            var self = this;
+        }
+
+        // Ajax request định kỳ lấy log chat
+        request() {
+            var self = this;
         }
 
         // Xử lý khi ấn vào client
@@ -328,6 +403,7 @@
                 self.boxOpen = 1;
             }
             nv_setCookie('imessage_show_box_' + self.chatid, self.boxOpen, 365);
+            self.checkScreen();
         }
 
         // Kiểm tra và chỉnh kích thước khung chat dựa vào chiều rộng màn hình
@@ -341,6 +417,7 @@
                 self.box.css({
                     height: self.options.boxheight + 'px'
                 });
+                self.setBodyHeight(self.options.boxheight);
                 if (!self.show_emoji) {
                     self.panel_emojis.css({
                         display: 'none'
@@ -418,6 +495,7 @@
             css.width = boxW + 'px';
             css.height = boxH + 'px';
             self.box.css(css);
+            self.setBodyHeight(boxH);
 
             // Emoji
             if (!self.show_emoji) {
@@ -450,6 +528,15 @@
             self.ps_emoji.update();
         }
 
+        // Thiết lập kích thước body
+        setBodyHeight(boxHeight) {
+            var self = this;
+            self.scrollerbody.css({
+                height: (boxHeight - self.heading.innerHeight() - (self.footer.is(':visible') ? self.footer.innerHeight() : 0)) + 'px'
+            });
+            self.ps_body.update();
+        }
+
         // Xử lý khi nhập nội dung chat
         checkKeyboard(event) {
             var self = this;
@@ -471,6 +558,7 @@
             } else {
                 $(textarea).css({'overflow' : 'hidden'});
             }
+            self.checkScreen();
 
             // Ấn enter => gửi nội dung chat
             if (event && event.keyCode == 13 && !event.shiftKey) {

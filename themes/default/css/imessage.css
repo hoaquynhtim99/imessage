@@ -1,4 +1,5 @@
 .imessage-light-mode {
+    --imessage-danger: #d9534f;
     --imessage-primary: #428bca;
     --imessage-white: #ffffff;
     --imessage-gray: #f0f2f5;
@@ -245,4 +246,53 @@
 
 .imessage-item-emoji img {
     cursor: pointer;
+}
+
+.imessage-box-body-scroller {
+    position: relative;
+    overflow: hidden;
+}
+
+.imessage-box-body-inner {
+    min-height: 100%;
+}
+
+.imessage-box-body-inner.login,
+.imessage-box-body-inner.info {
+    height: 100%;
+    overflow: hidden;
+}
+
+.imessage-login {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.imessage-login a {
+    display: block;
+    padding: 15px 10px;
+    line-height: 1;
+    flex: 0 1 70%;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    border-radius: 8px;
+    background-color: var(--imessage-primary);
+    color: var(--imessage-white);
+    font-weight: 500;
+}
+
+.imessage-info {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--imessage-danger);
+    text-align: center;
 }

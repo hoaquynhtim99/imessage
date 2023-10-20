@@ -147,7 +147,7 @@ if (!nv_function_exists('nv_block_imessage')) {
      */
     function nv_block_imessage($block_config)
     {
-        global $site_mods, $global_config, $module_name;
+        global $site_mods, $global_config, $module_name, $user_info, $page_url, $client_info;
 
         $module = $block_config['module'];
         $module_info = $site_mods[$module];
@@ -162,6 +162,21 @@ if (!nv_function_exists('nv_block_imessage')) {
         }
 
         include NV_ROOTDIR . '/modules/' . $module_file . '/language/' . NV_LANG_INTERFACE . '.php';
+
+        $block_config['loginrequire'] = defined('NV_IS_USER') ? 0 : 1;
+        $block_config['allowed'] = defined('NV_IS_USER') ? (nv_user_in_groups($block_config['group_chat']) ? 1 : 0) : 0;
+        $block_config['loginurl'] = '';
+        if (!defined('NV_IS_USER')) {
+            if (!empty($page_url)) {
+                $nv_redirect = $page_url;
+            } elseif (strpos($client_info['selfurl'], NV_MY_DOMAIN) === 0) {
+                $nv_redirect = $client_info['selfurl'];
+            } else {
+                $nv_redirect = NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA;
+            }
+            $block_config['loginurl'] = NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=users&amp;' . NV_OP_VARIABLE . '=login&amp;nv_redirect=' . nv_redirect_encrypt(nv_url_rewrite($nv_redirect, true));
+        }
+
         $xtpl = new XTemplate('block.imessage.tpl', NV_ROOTDIR . '/themes/' . $block_theme . '/modules/' . $module_info['module_theme']);
         $xtpl->assign('LANG', $lang_module);
         $xtpl->assign('CONFIG', $block_config);

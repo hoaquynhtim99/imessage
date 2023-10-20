@@ -20,6 +20,9 @@
     data-offsety="{CONFIG.offset_y}"
     data-boxtitle="{CONFIG.title}"
     data-boxheight="{CONFIG.box_height}"
+    data-loginrequire="{CONFIG.loginrequire}"
+    data-allowed="{CONFIG.allowed}"
+    data-loginurl="{CONFIG.loginurl}"
 ></div>
 <!-- END FORFOOTER -->
 <!-- END: button -->
@@ -34,6 +37,9 @@
     data-offsety="{CONFIG.offset_y}"
     data-boxtitle="{CONFIG.title}"
     data-boxheight="{CONFIG.box_height}"
+    data-loginrequire="{CONFIG.loginrequire}"
+    data-allowed="{CONFIG.allowed}"
+    data-loginurl="{CONFIG.loginurl}"
 ></div>
 <!-- END: inline -->
 <!-- END: main -->
