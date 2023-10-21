@@ -14,6 +14,10 @@
             this.must_login = 0;
             this.allowed = 0;
             this.busy = 0;
+            this.lastchat = 0;
+            this.lastding = 0;
+            this.max_time = 0;
+            this.max_uniqid = '';
 
             this.init();
         }
@@ -42,6 +46,8 @@
             loginurl: '',
             allowed: 0,
             tokend: '',
+            timeoutchat: 2000,
+            timeoutding: 5000,
         }
 
         #templateBtn = '\
@@ -347,8 +353,13 @@
             };
             var busyText = 0;
             if (typeof message != 'undefined') {
+                var currentTime = (new Date()).getTime();
                 params.message = message;
                 busyText = 1;
+                if (message == '[ding]') {
+                    self.lastding = currentTime;
+                }
+                self.lastchat = currentTime;
             }
             self.setBusy(busyText);
             $.ajax({
@@ -364,6 +375,12 @@
                     }
                     if (!respon.allowed) {
                         return self.handlerInfo(1);
+                    }
+                    if (self.enable_sound && (message == '[ding]' || respon.is_ding)) {
+                        self.sound_buzz.play();
+                    }
+                    if (self.enable_sound && !respon.is_ding && respon.new_message) {
+                        self.sound_chat.play();
                     }
                     console.log(respon);
                 },
@@ -393,6 +410,15 @@
         // Gửi chat
         postChat(message) {
             var self = this;
+            var currentTime = (new Date()).getTime();
+            if (message == '[ding]' && (currentTime - self.lastding) < self.options.timeoutding) {
+                alert(window.langImessage.ding_1 + ' ' + parseInt(self.options.timeoutding / 1000) + ' ' + window.langImessage.ding_2);
+                return;
+            }
+            if ((currentTime - self.lastchat) < self.options.timeoutchat) {
+                alert(window.langImessage.time_out_1 + ' ' + parseInt(self.options.timeoutchat / 1000) + ' ' + window.langImessage.time_out_2);
+                return;
+            }
             if (self.timerRequest) {
                 clearTimeout(self.timerRequest);
             }
@@ -409,8 +435,8 @@
         // Gửi buzz
         buzz() {
             var self = this;
-            if (self.enable_sound) {
-                self.sound_buzz.play();
+            if (self.busy) {
+                return;
             }
             self.postChat('[ding]');
         }
