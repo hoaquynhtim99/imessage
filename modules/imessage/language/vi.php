@@ -43,6 +43,7 @@ $lang_module['sago'] = '%s giây trước';
 $lang_module['atamoment'] = 'Mới tức thì';
 
 $lang_module['error_login'] = 'Lỗi: Bạn chưa đăng nhập';
+$lang_module['error_network'] = 'Lỗi mạng, xin vui lòng tải lại trang để thử lại';
 
 $lang_module['login_info'] = 'Hãy đăng nhập để tham gia trò chuyện cùng mọi người';
 $lang_module['login_info1'] = 'Chưa có tài khoản?';

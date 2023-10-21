@@ -14,6 +14,8 @@ if (!defined('NV_SYSTEM')) {
 
 define('NV_IS_MOD_CHAT', true);
 
+require NV_ROOTDIR . '/modules/' . $module_file . '/emotions.php';
+
 /**
  * Tính toán thời gian đẹp
  *

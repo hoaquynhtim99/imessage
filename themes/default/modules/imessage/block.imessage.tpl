@@ -23,6 +23,8 @@
     data-loginrequire="{CONFIG.loginrequire}"
     data-allowed="{CONFIG.allowed}"
     data-loginurl="{CONFIG.loginurl}"
+    data-ajaxurl="{CONFIG.ajaxurl}"
+    data-tokend="{NV_CHECK_SESSION}"
 ></div>
 <!-- END FORFOOTER -->
 <!-- END: button -->
@@ -40,6 +42,8 @@
     data-loginrequire="{CONFIG.loginrequire}"
     data-allowed="{CONFIG.allowed}"
     data-loginurl="{CONFIG.loginurl}"
+    data-ajaxurl="{CONFIG.ajaxurl}"
+    data-tokend="{NV_CHECK_SESSION}"
 ></div>
 <!-- END: inline -->
 <!-- END: main -->

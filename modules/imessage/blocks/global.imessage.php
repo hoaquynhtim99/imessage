@@ -176,6 +176,7 @@ if (!nv_function_exists('nv_block_imessage')) {
             }
             $block_config['loginurl'] = NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=users&amp;' . NV_OP_VARIABLE . '=login&amp;nv_redirect=' . nv_redirect_encrypt(nv_url_rewrite($nv_redirect, true));
         }
+        $block_config['ajaxurl'] = nv_url_rewrite(NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module . '&nocache=NOCACHEHLODER', true);
 
         $xtpl = new XTemplate('block.imessage.tpl', NV_ROOTDIR . '/themes/' . $block_theme . '/modules/' . $module_info['module_theme']);
         $xtpl->assign('LANG', $lang_module);

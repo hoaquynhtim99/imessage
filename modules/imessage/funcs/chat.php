@@ -39,8 +39,6 @@ if (!in_array($gID, $group_allow)) {
 }
 unset($group_allow, $check_group, $user_group);
 
-require_once NV_ROOTDIR . "/modules/" . $module_file . '/emotions.php';
-
 // Json Out
 /* array(
 *	0 => <ding>

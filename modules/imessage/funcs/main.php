@@ -14,72 +14,30 @@ if (!defined('NV_IS_MOD_CHAT')) {
 
 $page_title = $module_info['site_title'];
 
-// Dang nhap
-// FIXME
-if (!defined('NV_IS_USER')) {
-    $xtpl = new XTemplate("login.tpl", NV_ROOTDIR . "/modules/" . $module_file . "/imessage");
-    $xtpl->assign('LANG', $lang_module);
-    $xtpl->assign('DATAURL', NV_BASE_SITEURL . "modules/" . $module_file . "/imessage/");
-    $xtpl->assign('NV_BASE_SITEURL', NV_BASE_SITEURL);
-    $xtpl->assign('BASEPOST', NV_LANG_VARIABLE . "=" . NV_LANG_DATA . "&" . NV_NAME_VARIABLE . "=" . $module_name . "&login=1&token=" . md5($global_config['sitekey'] . session_id()));
-    $xtpl->assign('REGISTERURL', NV_BASE_SITEURL . "index.php?" . NV_LANG_VARIABLE . "=" . NV_LANG_DATA . "&amp;" . NV_NAME_VARIABLE . "=users&amp;" . NV_OP_VARIABLE . "=register");
+if ($nv_Request->get_title('tokend', 'post', '') === NV_CHECK_SESSION) {
+    $array_data = [
+        'allowed' => 1,
+        'loginrequire' => 0,
+    ];
+    $gid = $nv_Request->get_absint('gid', 'post', 0);
 
-    $xtpl->parse('main');
-    $contents = $xtpl->text('main');
+    // Phải đăng nhập
+    if (!defined('NV_IS_USER')) {
+        $array_data['loginrequire'] = 1;
+        nv_jsonOutput($array_data);
+    }
+    // Không có quyền chat
+    if (!isset($config_allow[$gid]) or !nv_user_in_groups($gid)) {
+        $array_data['allowed'] = 0;
+        nv_jsonOutput($array_data);
+    }
+    $message = nv_nl2br(nv_htmlspecialchars(trim(strip_tags($nv_Request->get_string('message', 'post', '', true, false)))));
+    $message = m_emotions_replace($message);
 
-    include (NV_ROOTDIR . "/includes/header.php");
-    echo nv_site_theme($contents, false);
-    include (NV_ROOTDIR . "/includes/footer.php");
+    $array_data['message'] = $message;
+
+    nv_jsonOutput($array_data);
 }
 
-// Xác định nhóm được chat
-$group_allow = [];
-$check_group = nv_user_groups(implode(',', $user_info['in_groups']));
-$group_allow = array_intersect($check_group, $config_allow);
-
-// Kiểm tra quyền chat
-if (empty($group_allow)) {
-    $xtpl = new XTemplate('info.tpl', NV_ROOTDIR . '/modules/' . $module_file . '/imessage');
-    $xtpl->assign('LANG', $lang_module);
-    $xtpl->assign('DATAURL', NV_BASE_SITEURL . 'modules/' . $module_file . '/imessage/');
-
-    $xtpl->parse('main');
-    $contents = $xtpl->text('main');
-
-    include (NV_ROOTDIR . '/includes/header.php');
-    echo nv_site_theme($contents, false);
-    include (NV_ROOTDIR . '/includes/footer.php');
-}
-
-// Lấy chiều cao khung chat
-$height = 250;
-if (isset($array_op[0])) {
-    $height = (int) $array_op[0];
-}
-$nv_Request->set_Session('chat_height_' . $module_data, $height);
-
-// Chuyển trang nếu chỉ có 1 nhóm chat
-if (sizeof($group_allow) == 1) {
-    nv_redirect_location(NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=chat/' . $group_allow[0]);
-}
-
-// Tất cả các nhóm
-$groups = nv_groups_list();
-
-$xtpl = new XTemplate("select.tpl", NV_ROOTDIR . "/modules/" . $module_file . "/imessage");
-$xtpl->assign('LANG', $lang_module);
-$xtpl->assign('DATAURL', NV_BASE_SITEURL . "modules/" . $module_file . "/imessage/");
-$xtpl->assign('NV_BASE_SITEURL', NV_BASE_SITEURL);
-
-foreach ($group_allow as $groupID) {
-    $xtpl->assign('TITLE', $groups[$groupID]);
-    $xtpl->assign('URL', nv_url_rewrite(NV_BASE_SITEURL . "index.php?" . NV_LANG_VARIABLE . "=" . NV_LANG_DATA . "&" . NV_NAME_VARIABLE . "=" . $module_name . "&" . NV_OP_VARIABLE . "=chat/" . $groupID));
-    $xtpl->parse('main.group');
-}
-
-$xtpl->parse('main');
-$contents = $xtpl->text('main');
-
-include (NV_ROOTDIR . "/includes/header.php");
-echo nv_site_theme($contents, false);
-include (NV_ROOTDIR . "/includes/footer.php");
+$url = NV_BASE_SITEURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA;
+nv_redirect_location($url);

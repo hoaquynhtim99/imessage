@@ -52,14 +52,14 @@ function m_emotions_array()
  */
 function m_emotions_replace($data)
 {
-    global $module_name, $module_file, $module_info;
+    global $module_file;
 
     $emotions = m_emotions_array();
     foreach ($emotions as $a => $b) {
         $x = [];
         if (is_array($b)) {
             for ($i = 0; $i < count($b); $i++) {
-                $b[$i] = m_htmlchars($b[$i]);
+                $b[$i] = nv_htmlspecialchars($b[$i]);
                 $x[] = $b[$i];
                 $v = strtolower($b[$i]);
                 if ($v != $b[$i]) {
@@ -67,40 +67,16 @@ function m_emotions_replace($data)
                 }
             }
         } else {
-            $b = m_htmlchars($b);
+            $b = nv_htmlspecialchars($b);
             $x[] = $b;
             $v = strtolower($b);
             if ($v != $b) {
                 $x[] = $v;
             }
         }
-        $p = '';
-        for ($u = 0; $u < strlen($x[0]); $u++) {
-            $ord = ord($x[0][$u]);
-            if ($ord < 65 && $ord > 90) {
-                $p .= '&#' . $ord . ';';
-            } else {
-                $p .= $x[0][$u];
-            }
-        }
 
-        $data = str_replace($x, '<img title="' . nv_htmlspecialchars($p) . '" style="vertical-align:middle" src="' . NV_BASE_SITEURL . 'modules/' . $module_file . '/imessage/emoticons/yahoo/' . $a . '.gif" />', $data);
+        $base_path = NV_BASE_SITEURL . 'themes/default/images/' . $module_file . '/emoticons/yahoo/';
+        $data = str_replace($x, '<img src="' . $base_path . $a . '.gif" />', $data);
     }
     return $data;
-}
-
-/**
- *
- * @param mixed $str
- * @return
- */
-function m_htmlchars($str)
-{
-    // @formatter:off
-    return str_replace(
-        ['&', '<', '>', '"', chr(92), chr(39)],
-        ['&amp;', '&lt;', '&gt;', '&quot;', '&#92;', '&#39'],
-        $str
-    );
-    // @formatter:on
 }

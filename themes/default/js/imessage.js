@@ -13,6 +13,7 @@
             this.show_emoji = 0;
             this.must_login = 0;
             this.allowed = 0;
+            this.busy = 0;
 
             this.init();
         }
@@ -37,8 +38,10 @@
             autoShowTimeout: 5000,
             baseDataUrl: nv_base_siteurl + 'themes/default/images/imessage',
             loginrequire: 0,
+            ajaxurl: '',
             loginurl: '',
             allowed: 0,
+            tokend: '',
         }
 
         #templateBtn = '\
@@ -72,7 +75,7 @@
                     </a>\
                     <a data-toggle="chatbuzz" class="icon-ding" href="#"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M319.4 372c48.5-31.3 80.6-85.9 80.6-148c0-97.2-78.8-176-176-176S48 126.8 48 224c0 62.1 32.1 116.6 80.6 148c1.2 17.3 4 38 7.2 57.1l.2 1C56 395.8 0 316.5 0 224C0 100.3 100.3 0 224 0S448 100.3 448 224c0 92.5-56 171.9-136 206.1l.2-1.1c3.1-19.2 6-39.8 7.2-57zm-2.3-38.1c-1.6-5.7-3.9-11.1-7-16.2c-5.8-9.7-13.5-17-21.9-22.4c19.5-17.6 31.8-43 31.8-71.3c0-53-43-96-96-96s-96 43-96 96c0 28.3 12.3 53.8 31.8 71.3c-8.4 5.4-16.1 12.7-21.9 22.4c-3.1 5.1-5.4 10.5-7 16.2C99.8 307.5 80 268 80 224c0-79.5 64.5-144 144-144s144 64.5 144 144c0 44-19.8 83.5-50.9 109.9zM224 312c32.9 0 64 8.6 64 43.8c0 33-12.9 104.1-20.6 132.9c-5.1 19-24.5 23.4-43.4 23.4s-38.2-4.4-43.4-23.4c-7.8-28.5-20.6-99.7-20.6-132.8c0-35.1 31.1-43.8 64-43.8zm0-144a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg></a>\
                 </div>\
-                <div class="box-text">\
+                <div class="box-text" data-toggle="boxtext">\
                     <textarea placeholder="Aa"></textarea>\
                     <a data-toggle="showemojis" class="icon-emoji" href="#"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM164.1 325.5C182 346.2 212.6 368 256 368s74-21.8 91.9-42.5c5.8-6.7 15.9-7.4 22.6-1.6s7.4 15.9 1.6 22.6C349.8 372.1 311.1 400 256 400s-93.8-27.9-116.1-53.5c-5.8-6.7-5.1-16.8 1.6-22.6s16.8-5.1 22.6 1.6zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></a>\
                 </div>\
@@ -135,6 +138,7 @@
             self.btn = $('[data-toggle="chatbtn"]', self.$element);
             self.box = $('[data-toggle="boxArea"]', self.$element);
             self.textbox = $('textarea', self.$element);
+            self.textboxcontainer = $('[data-toggle="boxtext"]', self.$element);
             self.btn_toggle_sound = $('[data-toggle="chatsound"]', self.$element);
             self.btn_buzz = $('[data-toggle="chatbuzz"]', self.$element);
             self.btn_emoji = $('[data-toggle="showemojis"]', self.$element);
@@ -259,7 +263,9 @@
             // Ẩn hiện emoji
             self.btn_emoji.on('click', function(e) {
                 e.preventDefault();
-                self.toggleEmojis();
+                if (!self.busy) {
+                    self.toggleEmojis();
+                }
             });
 
             // Xử lý khi click vào bất kỳ vị trí nào trên trang
@@ -273,7 +279,6 @@
             if (!self.options.allowed) {
                 return self.handlerInfo(0);
             }
-            // FIXME
             self.timerRequest = setTimeout(function() {
                 self.request();
             }, 1000);
@@ -284,6 +289,9 @@
             var self = this;
             if (checkscreen) {
                 self.body.html('');
+                self.footer.css({
+                    'display': 'none'
+                });
                 self.checkScreen();
             }
             self.body.addClass('login');
@@ -293,24 +301,78 @@
         }
 
         // Hiển thị thông báo và kết thúc
-        handlerInfo(checkscreen) {
+        handlerInfo(checkscreen, message) {
             var self = this;
             if (checkscreen) {
                 self.body.html('');
+                self.footer.css({
+                    'display': 'none'
+                });
                 self.checkScreen();
             }
             self.body.addClass('info');
             self.body.html(self.#templateInfo);
-            $('[data-toggle="info"]', self.body).html(window.langImessage.no_allow_chat);
+            if (typeof message == "undefined") {
+                message = window.langImessage.no_allow_chat;
+            }
+            $('[data-toggle="info"]', self.body).html(message);
         }
 
-        handlerChatRequest() {
+        setBusy(busyText) {
             var self = this;
+            if (busyText) {
+                self.busy = 1;
+                self.textboxcontainer.addClass('busy');
+                self.textbox.prop('disabled', true);
+            }
+        }
+
+        clearBusy(busyText) {
+            var self = this;
+            if (busyText) {
+                self.busy = 0;
+                self.textboxcontainer.removeClass('busy');
+                self.textbox.val('').prop('disabled', false);
+                self.checkKeyboard();
+                self.textbox.focus();
+            }
         }
 
         // Ajax request định kỳ lấy log chat
-        request() {
+        request(message) {
             var self = this;
+            var params = {
+                tokend: self.options.tokend,
+                gid: self.options.groupchat,
+            };
+            var busyText = 0;
+            if (typeof message != 'undefined') {
+                params.message = message;
+                busyText = 1;
+            }
+            self.setBusy(busyText);
+            $.ajax({
+                type: 'POST',
+                url: self.options.ajaxurl.replace('NOCACHEHLODER', new Date().getTime()),
+                data: params,
+                dataType: 'json',
+                cache: false,
+                success: function(respon) {
+                    self.clearBusy(busyText);
+                    if (respon.loginrequire) {
+                        return self.handlerLogin(1);
+                    }
+                    if (!respon.allowed) {
+                        return self.handlerInfo(1);
+                    }
+                    console.log(respon);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error(jqXHR, textStatus, errorThrown);
+                    self.handlerInfo(1, window.langImessage.error_network);
+                    self.clearBusy(busyText);
+                }
+            });
         }
 
         // Xử lý khi ấn vào client
@@ -330,7 +392,11 @@
 
         // Gửi chat
         postChat(message) {
-            console.log(message);
+            var self = this;
+            if (self.timerRequest) {
+                clearTimeout(self.timerRequest);
+            }
+            self.request(message);
         }
 
         // Ẩn hiện emojis
@@ -544,6 +610,7 @@
             if (text.length > 0) {
                 self.box.addClass('imessage-is-typing');
             } else {
+                self.textbox.val(text);
                 self.box.removeClass('imessage-is-typing');
             }
             var maxHeight = 96, basicHeight = 16;
@@ -561,8 +628,8 @@
             self.checkScreen();
 
             // Ấn enter => gửi nội dung chat
-            if (event && event.keyCode == 13 && !event.shiftKey) {
-                console.log('Submit');
+            if (event && event.keyCode == 13 && !event.shiftKey && text.length > 0) {
+                self.postChat(text);
             }
         }
 
