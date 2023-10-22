@@ -14,7 +14,7 @@ if (!defined('NV_ADMIN') or !defined('NV_MAINFILE')) {
 
 $module_version = [
     'name' => 'Chat',
-    'modfuncs' => 'main, chat',
+    'modfuncs' => 'main',
     'is_sysmod' => 0,
     'virtual' => 1,
     'version' => '4.5.00',

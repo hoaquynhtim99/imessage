@@ -40,9 +40,10 @@ if ($nv_Request->get_title('tokend', 'post', '') === NV_CHECK_SESSION) {
     /*
      * Đọc dữ liệu chat cũ. Lưu tối đa 200 bản thi, quá đó thì cứ xóa đi cái cũ nhất
      */
+    $chats = [];
     $chat_file = NV_ROOTDIR . '/modules/' . $module_file . '/data/data_' . NV_LANG_DATA . '_' . $gid . '.dat';
     if (file_exists($chat_file)) {
-        $array_data['data'] = json_decode(file_get_contents($chat_file), true);
+        $chats = json_decode(file_get_contents($chat_file), true);
     }
 
     // Ghi thêm vào file
@@ -50,25 +51,32 @@ if ($nv_Request->get_title('tokend', 'post', '') === NV_CHECK_SESSION) {
         $rows = [
             'photo' => empty($user_info['avata']) ? (NV_BASE_SITEURL . 'themes/default/images/' . $module_file . '/d-avatar.gif') : $user_info['avata'],
             'name' => $user_info['full_name'],
+            'user' => $user_info['username'],
             'time' => NV_CURRENTTIME,
             'chat' => $message == '&#91;ding&#93;' ? '<span class="ding">[ding]</span>' : $message,
+            'ding' => $message == '&#91;ding&#93;' ? 1 : 0,
             'uniqid' => uniqid('', true),
             'userid' => $user_info['userid'],
         ];
-        $array_data['data'][] = $rows;
+        $chats[] = $rows;
     }
 
-    if (sizeof($array_data['data']) > 200) {
-        unset($array_data['data'][0]);
-        $array_data['data'] = array_values($array_data['data']);
+    if (sizeof($chats) > 200) {
+        unset($chats[0]);
+        $chats = array_values($chats);
     }
-    file_put_contents($chat_file, json_encode($array_data['data']), LOCK_EX);
+    file_put_contents($chat_file, json_encode($chats), LOCK_EX);
 
-    // Tính lại để show thời gian
-    foreach ($array_data['data'] as $key => $chat) {
-        $array_data['data'][$key]['time_show'] = nv_time_type($chat['time']);
-        $array_data['data'][$key]['self'] = $user_info['userid'] == $chat['userid'];
+    /*
+     * Lặp lại các đoạn chat
+     * - Tính lại để show thời gian
+     * - Tính xem mình hay người khác chat
+     */
+    foreach ($chats as $key => $chat) {
+        $chats[$key]['time_show'] = date('H:i:s d/m/Y', $chat['time']);
+        $chats[$key]['self'] = $user_info['userid'] == $chat['userid'];
     }
+    $array_data['data'] = $chats;
 
     nv_jsonOutput($array_data);
 }

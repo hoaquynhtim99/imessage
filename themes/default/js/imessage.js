@@ -16,8 +16,11 @@
             this.busy = 0;
             this.lastchat = 0;
             this.lastding = 0;
-            this.max_time = 0;
-            this.max_uniqid = '';
+            this.maxTime = 0;
+            this.maxUniqid = '';
+            this.lastUserid = 0;
+            this.chatRowOffset = 0;
+            this.initRequest = 1;
 
             this.init();
         }
@@ -69,7 +72,7 @@
             </div>\
             <div class="imessage-box-body">\
                 <div class="imessage-box-body-scroller" data-toggle="scrollerbody">\
-                    <div class="imessage-box-body-inner" data-toggle="body">\
+                    <div class="imessage-box-body-inner chat" data-toggle="body">\
                     </div>\
                 </div>\
             </div>\
@@ -126,6 +129,25 @@
             '8' : ':X',			'4' : ':D',					'27' : '=;',		'10' : ':P',
         };
 
+        #templateChatRow = '\
+        <div class="imessage-chat-row" data-toggle="c-row" data-row="IDHOLDER">\
+            <div class="chat-avata" data-toggle="c-avata">\
+                <img data-toggle="c-avata-img" src="" alt="">\
+            </div>\
+            <div class="chat-messages" data-toggle="c-messages">\
+            </div>\
+        </div>\
+        ';
+
+        #templateChatRowItem = '\
+        <div class="chat-item" data-id="IDHOLDER">\
+            <div class="item-body" data-toggle="c-mess-content"></div>\
+            <div class="item-tools">\
+                <a href="#" data-toggle="quote"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M205 34.8c11.5 5.1 19 16.6 19 29.2v64H336c97.2 0 176 78.8 176 176c0 113.3-81.5 163.9-100.2 174.1c-2.5 1.4-5.3 1.9-8.1 1.9c-10.9 0-19.7-8.9-19.7-19.7c0-7.5 4.3-14.4 9.8-19.5c9.4-8.8 22.2-26.4 22.2-56.7c0-53-43-96-96-96H224v64c0 12.6-7.4 24.1-19 29.2s-25 3-34.4-5.4l-160-144C3.9 225.7 0 217.1 0 208s3.9-17.7 10.6-23.8l160-144c9.4-8.5 22.9-10.6 34.4-5.4z"/></svg></a>\
+            </div>\
+        </div>\
+        ';
+
         // Khởi tạo
         init() {
             var self = this;
@@ -178,6 +200,10 @@
             self.ps_body = new PerfectScrollbar(self.scrollerbody[0], {
                 wheelPropagation: false,
                 minScrollbarLength: 20
+            });
+            self.body.delegate('[data-toggle="quote"]', 'click', function(e) {
+                e.preventDefault();
+                self.#insertText('@' + $(this).data('user'), true);
             });
 
             // Âm thanh
@@ -285,9 +311,11 @@
             if (!self.options.allowed) {
                 return self.handlerInfo(0);
             }
-            self.timerRequest = setTimeout(function() {
-                self.request();
-            }, 1000);
+            if (self.options.typeshow != 'button') {
+                self.timerRequest = setTimeout(function() {
+                    self.request('', 0);
+                }, 1000);
+            }
         }
 
         // Hiển thị nút đăng nhập và kết thúc
@@ -300,7 +328,7 @@
                 });
                 self.checkScreen();
             }
-            self.body.addClass('login');
+            self.body.removeClass('chat info').addClass('login');
             self.body.html(self.#templateLogin);
             $('[data-toggle="btnlogin"]', self.body).attr('href', self.options.loginurl);
             $('[data-toggle="btnlogin"]', self.body).html(window.langImessage.login);
@@ -316,7 +344,7 @@
                 });
                 self.checkScreen();
             }
-            self.body.addClass('info');
+            self.body.removeClass('chat login').addClass('info');
             self.body.html(self.#templateInfo);
             if (typeof message == "undefined") {
                 message = window.langImessage.no_allow_chat;
@@ -345,14 +373,14 @@
         }
 
         // Ajax request định kỳ lấy log chat
-        request(message) {
+        request(message, proactive) {
             var self = this;
             var params = {
                 tokend: self.options.tokend,
                 gid: self.options.groupchat,
             };
             var busyText = 0;
-            if (typeof message != 'undefined') {
+            if (message != '') {
                 var currentTime = (new Date()).getTime();
                 params.message = message;
                 busyText = 1;
@@ -376,13 +404,89 @@
                     if (!respon.allowed) {
                         return self.handlerInfo(1);
                     }
-                    if (self.enable_sound && (message == '[ding]' || respon.is_ding)) {
+                    self.body.removeClass('info login').addClass('chat');
+
+                    // Lặp tìm đoạn chat cần ghi ra
+                    var playChat = 0, playDing = 0, newChat = 0;
+
+                    if (respon.data.length > 0) {
+                        // 1 trong 2 giá trị <0 là không có gì mới
+                        var tof = -1, tot = -1;
+                        if (self.maxUniqid == '') {
+                            tof = 0;
+                            tot = respon.data.length - 1;
+                        } else if (respon.data[respon.data.length - 1].uniqid != self.maxUniqid) {
+                            tot = respon.data.length - 1;
+                            for (var i = respon.data.length - 1; i >= 0; i--) {
+                                var chat = respon.data[i];
+                                if (chat.uniqid == self.maxUniqid) {
+                                    break;
+                                }
+                                tof = i;
+                            }
+                        }
+                        if (tof >= 0 && tot >= 0) {
+                            newChat = 1;
+                            // Lặp đoạn chat đó để ghi ra nội dung mới
+                            for (var i = tof; i <= tot; i++) {
+                                var chat = respon.data[i];
+                                var chatRow;
+                                if (chat.userid != self.lastUserid) {
+                                    self.lastUserid = chat.userid;
+                                    self.chatRowOffset++;
+
+                                    // Thêm row chat mới
+                                    var html = self.#templateChatRow.replace('IDHOLDER', self.chatRowOffset);
+                                    self.body.append(html);
+                                    chatRow = $('[data-toggle="c-row"][data-row="' + self.chatRowOffset + '"]', self.body);
+                                    chatRow.addClass(chat.self ? 'row-me' : 'row-other');
+                                    $('[data-toggle="c-avata-img"]', chatRow).attr('src', chat.photo);
+                                    $('[data-toggle="c-avata-img"]', chatRow).attr('alt', chat.name);
+                                    $('[data-toggle="c-avata-img"]', chatRow).attr('title', chat.name);
+                                } else {
+                                    chatRow = $('[data-toggle="c-row"][data-row="' + self.chatRowOffset + '"]', self.body);
+                                }
+                                var rowMessage = $('[data-toggle="c-messages"]', chatRow);
+                                rowMessage.append(self.#templateChatRowItem.replace('IDHOLDER', chat.uniqid));
+                                var mCtn = $('[data-id="' + chat.uniqid + '"]', chatRow);
+
+                                $('[data-toggle="c-mess-content"]', mCtn).html(chat.chat);
+                                $('[data-toggle="quote"]', mCtn).data('user', chat.user);
+                                rowMessage.prop('title', chat.time_show);
+
+                                self.maxTime = chat.time;
+                                self.maxUniqid = chat.uniqid;
+
+                                if (message == '[ding]' || (!self.initRequest && !proactive && chat.ding)) {
+                                    playDing = 1;
+                                } else if (!self.initRequest && !proactive && !chat.self) {
+                                    playChat = 1;
+                                }
+                            }
+                        }
+                    }
+
+                    // Dịch nội dung chat xuống cuối trang
+                    var lastChat = $('[data-id="' + self.maxUniqid + '"]', self.body).last();
+                    if (newChat && lastChat.length) {
+                        setTimeout(function() {
+                            self.scrollerbody[0].scrollTop = lastChat.position().top + 99999;
+                        }, 10);
+                    }
+
+                    // Tiếp tục duy trì request
+                    self.timerRequest = setTimeout(function() {
+                        self.request('', 0);
+                    }, 5000);
+
+                    // Âm thanh chat
+                    if (self.enable_sound && playDing) {
                         self.sound_buzz.play();
                     }
-                    if (self.enable_sound && !respon.is_ding && respon.new_message) {
+                    if (self.enable_sound && playChat) {
                         self.sound_chat.play();
                     }
-                    console.log(respon);
+                    self.initRequest = 0;
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error(jqXHR, textStatus, errorThrown);
@@ -422,7 +526,7 @@
             if (self.timerRequest) {
                 clearTimeout(self.timerRequest);
             }
-            self.request(message);
+            self.request(message, 1);
         }
 
         // Ẩn hiện emojis
@@ -490,9 +594,15 @@
             if (self.boxOpen) {
                 self.box.removeClass('box-open');
                 self.boxOpen = 0;
+                if (self.timerRequest) {
+                    clearTimeout(self.timerRequest);
+                }
             } else {
                 self.box.addClass('box-open');
                 self.boxOpen = 1;
+                self.timerRequest = setTimeout(function() {
+                    self.request('', 0);
+                }, 1000);
             }
             nv_setCookie('imessage_show_box_' + self.chatid, self.boxOpen, 365);
             self.checkScreen();

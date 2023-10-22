@@ -4,6 +4,7 @@
     --imessage-white: #ffffff;
     --imessage-gray: #f0f2f5;
     --imessage-gray2: #bcc0c4;
+    --imessage-gray3: #E4E6EB;
 }
 
 .imessage-chatbox {
@@ -263,6 +264,18 @@
     overflow: hidden;
 }
 
+.imessage-box-body-inner.chat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    align-content: flex-end;
+}
+
+.imessage-box-body-inner.chat>.imessage-chat-row {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
 .imessage-login {
     height: 100%;
     display: flex;
@@ -295,4 +308,135 @@
     padding: 20px;
     color: var(--imessage-danger);
     text-align: center;
+}
+
+.imessage-chat-row {
+    padding-bottom: 4px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.imessage-chat-row .chat-avata {
+    padding: 8px;
+}
+
+.imessage-chat-row .chat-avata img {
+    background-color: var(--imessage-gray);
+    border-radius: 14px;
+    width: 28px;
+    height: 28px;
+}
+
+.imessage-chat-row .chat-messages {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-right: 8px;
+}
+
+.imessage-chat-row .chat-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.imessage-chat-row .chat-item:last-child {
+    margin-bottom: 0;
+}
+
+.imessage-chat-row .chat-item .item-body {
+    padding: 10px 12px;
+    background-color: var(--imessage-gray3);
+    border-radius: 4px;
+}
+
+.imessage-chat-row .chat-item .item-body .ding {
+    font-weight: 700;
+}
+
+.imessage-chat-row .chat-item .item-tools {
+    display: flex;
+    margin-left: 8px;
+    opacity: 0;
+}
+
+.imessage-chat-row .chat-item:hover .item-tools {
+    opacity: 1;
+}
+
+.imessage-chat-row .chat-item .item-tools a {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.imessage-chat-row .chat-item .item-tools a:hover {
+    background-color: var(--imessage-gray);
+}
+
+.imessage-chat-row .chat-item .item-tools a svg {
+    fill: var(--imessage-gray2);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    width: 14px;
+    height: 14px;
+}
+
+.imessage-chat-row.row-other .chat-item .item-body {
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+.imessage-chat-row.row-other .chat-item .item-body .ding {
+    color: var(--imessage-danger);
+}
+
+.imessage-chat-row.row-other .chat-item:first-child .item-body {
+    border-top-left-radius: 18px;
+}
+
+.imessage-chat-row.row-other .chat-item:last-child .item-body {
+    border-bottom-left-radius: 18px;
+}
+
+.imessage-chat-row.row-me .chat-avata {
+    order: 2;
+}
+
+.imessage-chat-row.row-me .chat-messages {
+    order: 1;
+    padding-right: 0;
+    padding-left: 8px;
+}
+
+.imessage-chat-row.row-me .chat-item {
+    justify-content: flex-end;
+}
+
+.imessage-chat-row.row-me .chat-item .item-tools {
+    order: 1;
+    margin-left: 0;
+    margin-right: 8px;
+}
+
+.imessage-chat-row.row-me .chat-item .item-body {
+    background-color: var(--imessage-primary);
+    color: var(--imessage-white);
+    order: 2;
+}
+
+.imessage-chat-row.row-me .chat-item .item-body {
+    border-top-left-radius: 18px;
+    border-bottom-left-radius: 18px;
+}
+
+.imessage-chat-row.row-me .chat-item:first-child .item-body {
+    border-top-right-radius: 18px;
+}
+
+.imessage-chat-row.row-me .chat-item:last-child .item-body {
+    border-bottom-right-radius: 18px;
 }
