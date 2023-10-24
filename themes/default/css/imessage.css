@@ -158,6 +158,10 @@
     border-radius: 14px;
 }
 
+.is-mobile .imessage-box-footer .box-text {
+    margin-right: 30px;
+}
+
 .imessage-box-footer textarea {
     border: 0;
     resize: none;
@@ -180,6 +184,18 @@
     bottom: 16px;
 }
 
+.imessage-box-footer .box-btns {
+    display: none;
+    align-items: center;
+    position: absolute;
+    right: 10px;
+    bottom: 16px;
+}
+
+.is-mobile .imessage-box-footer .box-btns {
+    display: flex;
+}
+
 .imessage-is-typing .box-funcs {
     display: none;
 }
@@ -188,11 +204,16 @@
     margin-left: 0;
 }
 
-.imessage-box-footer .box-funcs a {
+.imessage-box-footer .box-funcs a,
+.imessage-box-footer .box-btns a {
     flex: 0 0 20px;
     width: 20px;
     height: 20px;
     margin-right: 8px;
+}
+
+.imessage-box-footer .box-btns a:last-child {
+    margin-right: 0;
 }
 
 .imessage-box-footer .box-funcs .icon-sound svg.sound-off {

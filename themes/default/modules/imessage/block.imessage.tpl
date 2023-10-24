@@ -25,6 +25,7 @@
     data-loginurl="{CONFIG.loginurl}"
     data-ajaxurl="{CONFIG.ajaxurl}"
     data-tokend="{NV_CHECK_SESSION}"
+    data-mobile="{CONFIG.is_mobile}"
 ></div>
 <!-- END FORFOOTER -->
 <!-- END: button -->
@@ -44,6 +45,7 @@
     data-loginurl="{CONFIG.loginurl}"
     data-ajaxurl="{CONFIG.ajaxurl}"
     data-tokend="{NV_CHECK_SESSION}"
+    data-mobile="{CONFIG.is_mobile}"
 ></div>
 <!-- END: inline -->
 <!-- END: main -->
